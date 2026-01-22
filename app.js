@@ -68,6 +68,14 @@ const DEMO_COURTS = [
   },
 ];
 
+const COURT_IMAGES = [
+  { key: "indoor", src: "assets/img/indoor Arena.jpg" },
+  { key: "airport", src: "assets/img/Airport.jpg" },
+  { key: "barbershop", src: "assets/img/barbershop.jpg" },
+  { key: "gym", src: "assets/img/gym.jpg" },
+  { key: "lounge", src: "assets/img/lounge.jpg" },
+];
+
 /** ------------- DOM HELPERS ------------- **/
 const $ = (id) => document.getElementById(id);
 const qs = (sel, root = document) => root.querySelector(sel);
@@ -260,29 +268,14 @@ function renderCourtCategories() {
 
   wrap.innerHTML = state.courts
     .map((c) => {
-      const img = c.card_image || c.hero_image || "";
-      const hourly = formatNaira(c.hourly_rate || 0);
+      const img = resolveCourtImage(c);
       return `
-        <article class="card">
-          <div class="card__img">
+        <button class="court-view" type="button" data-court="${c.id}">
+          <div class="court-view__img">
             ${img ? `<img src="${escapeAttr(img)}" alt="${escapeHtml(c.name)}" />` : ""}
           </div>
-          <div class="card__body">
-            <div class="card__title">
-              <b>${escapeHtml(c.name)}</b>
-              <span class="arrow">-></span>
-            </div>
-            <div class="card__desc">
-              Premium layout for events, ceremonies, and private runs.
-            </div>
-            <div class="card__foot">
-              <span class="pricepill">${hourly}/hour</span>
-              <button class="btn btn--light" type="button" data-court="${c.id}">
-                Book
-              </button>
-            </div>
-          </div>
-        </article>
+          <div class="court-view__label">${escapeHtml(c.name)}</div>
+        </button>
       `;
     })
     .join("");
@@ -363,6 +356,13 @@ function setSelectedCourt(courtId) {
 
   refreshAvailability();
   recalcPrice();
+}
+
+function resolveCourtImage(court) {
+  const haystack = `${court?.name || ""} ${court?.slug || ""}`.toLowerCase();
+  const match = COURT_IMAGES.find((img) => haystack.includes(img.key));
+  if (match) return match.src;
+  return court?.card_image || court?.hero_image || "";
 }
 
 /** ------------- MODAL ------------- **/

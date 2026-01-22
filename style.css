@@ -468,6 +468,39 @@ body {
   gap: 14px;
   margin-top: 18px;
 }
+.cards--category {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.court-view {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 20px;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  gap: 10px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+}
+.court-view:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.court-view__img {
+  height: 180px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+.court-view__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.court-view__label {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
 .card {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: linear-gradient(
@@ -822,6 +855,9 @@ body {
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .cards--category {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .cards--trending {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -853,6 +889,9 @@ body {
     width: 100%;
   }
   .cards {
+    grid-template-columns: 1fr;
+  }
+  .cards--category {
     grid-template-columns: 1fr;
   }
   .cards--contact {
