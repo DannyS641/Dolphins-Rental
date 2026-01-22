@@ -1,5 +1,5 @@
 /* =========================================================
-   Dolphins Courts — Booking + Availability + Promo (Supabase)
+   Dolphins Courts - Booking + Availability + Promo (Supabase)
    Tech: HTML/CSS/JS + Supabase (no framework)
    ========================================================= */
 
@@ -10,8 +10,63 @@ const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 /** Optional: currency formatting **/
 const NGN = new Intl.NumberFormat("en-NG");
 
+const SUPABASE_CONFIGURED =
+  SUPABASE_URL &&
+  SUPABASE_ANON_KEY &&
+  !SUPABASE_URL.includes("YOUR_SUPABASE_URL") &&
+  !SUPABASE_ANON_KEY.includes("YOUR_SUPABASE_ANON_KEY");
+
 /** Supabase client **/
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = SUPABASE_CONFIGURED
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+const DEMO_COURTS = [
+  {
+    id: "demo-1",
+    name: "Indoor Arena",
+    slug: "indoor-arena",
+    hero_image: "",
+    card_image: "",
+    hourly_rate: 20000,
+    daily_rate: 140000,
+    weekly_rate: 850000,
+    is_active: true,
+  },
+  {
+    id: "demo-2",
+    name: "Airport View",
+    slug: "airport-view",
+    hero_image: "",
+    card_image: "",
+    hourly_rate: 15000,
+    daily_rate: 120000,
+    weekly_rate: 700000,
+    is_active: true,
+  },
+  {
+    id: "demo-3",
+    name: "Lounge Court",
+    slug: "lounge-court",
+    hero_image: "",
+    card_image: "",
+    hourly_rate: 12000,
+    daily_rate: 90000,
+    weekly_rate: 520000,
+    is_active: true,
+  },
+  {
+    id: "demo-4",
+    name: "Gym View",
+    slug: "gym-view",
+    hero_image: "",
+    card_image: "",
+    hourly_rate: 10000,
+    daily_rate: 75000,
+    weekly_rate: 450000,
+    is_active: true,
+  },
+];
 
 /** ------------- DOM HELPERS ------------- **/
 const $ = (id) => document.getElementById(id);
@@ -37,6 +92,17 @@ function todayISO() {
   return d.toISOString().slice(0, 10);
 }
 
+function toPlanLabel(planValue) {
+  const val = String(planValue || "").toLowerCase();
+  if (val === "daily") return "Daily";
+  if (val === "weekly") return "Weekly";
+  return "Hourly";
+}
+
+function formatNaira(amount) {
+  return `\u20A6${NGN.format(amount)}`;
+}
+
 /** ------------- STATE ------------- **/
 const state = {
   courts: [],
@@ -45,10 +111,7 @@ const state = {
   startDate: todayISO(),
   endDate: todayISO(),
   startTime: "10:00",
-  hours: 1,
-  days: 1,
-  weeks: 1,
-  qty: 1,
+  hours: 2,
   promo: null, // {id, code, type, value}
   pricing: { base: 0, discount: 0, total: 0 },
   blockedDates: new Set(), // YYYY-MM-DD
@@ -57,95 +120,98 @@ const state = {
 
 /** ------------- INIT ------------- **/
 document.addEventListener("DOMContentLoaded", async () => {
+  setText($("year"), String(new Date().getFullYear()));
+
   wireGlobalButtons();
   wireBookingForm();
   wirePromo();
 
-  // load courts, then set default selected
   await loadCourts();
+  renderCalendar(new Date());
+  await refreshAvailability();
 
-  // build calendar UI if present
-  if ($("availabilityCalendar")) {
-    renderCalendar(new Date());
-    await refreshAvailability();
-  }
+  updatePlanFieldsUI();
+  syncInputsFromState();
+  recalcPrice();
 });
 
 /** ------------- UI WIRING ------------- **/
 function wireGlobalButtons() {
-  // section rent now buttons (if they exist)
-  ["bookBtnTop", "bookBtnHero", "bookBtnPackages"].forEach((id) => {
-    const el = $(id);
-    if (el) el.addEventListener("click", () => openBookingModal());
+  $("scrollBook")?.addEventListener("click", scrollToBooking);
+  $("bannerBookBtn")?.addEventListener("click", scrollToBooking);
+
+  $("openCalendar")?.addEventListener("click", () => {
+    $("calendar")?.classList.toggle("is-open");
   });
 
-  // modal close
-  $("closeModal")?.addEventListener("click", closeBookingModal);
-  $("cancelBtn")?.addEventListener("click", closeBookingModal);
+  document.addEventListener("click", (e) => {
+    const cal = $("calendar");
+    const btn = $("openCalendar");
+    if (!cal || !btn) return;
+    if (cal.contains(e.target) || btn.contains(e.target)) return;
+    cal.classList.remove("is-open");
+  });
 
+  $("bookNowBtn")?.addEventListener("click", openBookingModal);
+
+  $("closeModal")?.addEventListener("click", closeBookingModal);
+  $("cancelModal")?.addEventListener("click", closeBookingModal);
   $("modalBackdrop")?.addEventListener("click", (e) => {
     if (e.target === $("modalBackdrop")) closeBookingModal();
   });
-
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeBookingModal();
   });
 }
 
 function wireBookingForm() {
-  // plan selection (if you have plan tabs or select)
-  $("plan")?.addEventListener("change", (e) => {
-    state.plan = e.target.value;
-    updatePlanFieldsUI();
-    recalcPrice();
+  qsa(".tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      state.plan = toPlanLabel(tab.dataset.plan);
+      qsa(".tab").forEach((t) => t.classList.remove("is-active"));
+      tab.classList.add("is-active");
+      updatePlanFieldsUI();
+      recalcPrice();
+    });
   });
 
-  $("qty")?.addEventListener("input", (e) => {
-    state.qty = clamp(Number(e.target.value || 1), 1, 30);
-    recalcPrice();
-  });
-
-  $("date")?.addEventListener("change", async (e) => {
-    state.startDate = e.target.value || todayISO();
-    // default: same day
-    state.endDate = state.startDate;
-    if ($("endDate")) $("endDate").value = state.endDate;
+  $("courtSelect")?.addEventListener("change", async (e) => {
+    setSelectedCourt(e.target.value);
     await refreshAvailability();
     recalcPrice();
   });
 
-  $("endDate")?.addEventListener("change", async (e) => {
+  $("durationInput")?.addEventListener("change", (e) => {
+    state.hours = clamp(Number(e.target.value || 1), 1, 12);
+    recalcPrice();
+  });
+
+  $("dateInput")?.addEventListener("change", async (e) => {
+    state.startDate = e.target.value || todayISO();
+    if (state.plan === "Hourly") state.endDate = state.startDate;
+    await refreshAvailability();
+    recalcPrice();
+  });
+
+  $("endDateInput")?.addEventListener("change", async (e) => {
     state.endDate = e.target.value || state.startDate;
     await refreshAvailability();
     recalcPrice();
   });
 
-  $("time")?.addEventListener("change", (e) => {
+  $("timeInput")?.addEventListener("change", (e) => {
     state.startTime = e.target.value || "10:00";
   });
 
-  $("hours")?.addEventListener("input", (e) => {
-    state.hours = clamp(Number(e.target.value || 1), 1, 12);
+  $("quoteBtn")?.addEventListener("click", async () => {
+    await refreshAvailability();
     recalcPrice();
   });
-
-  $("days")?.addEventListener("input", (e) => {
-    state.days = clamp(Number(e.target.value || 1), 1, 14);
-    recalcPrice();
-  });
-
-  $("weeks")?.addEventListener("input", (e) => {
-    state.weeks = clamp(Number(e.target.value || 1), 1, 12);
-    recalcPrice();
-  });
-
-  // submit booking
-  $("submitBtn")?.addEventListener("click", submitBooking);
 }
 
 function wirePromo() {
-  $("applyPromoBtn")?.addEventListener("click", applyPromo);
-  $("promoCode")?.addEventListener("keydown", (e) => {
+  $("applyPromo")?.addEventListener("click", applyPromo);
+  $("promoInput")?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
       applyPromo();
@@ -153,85 +219,66 @@ function wirePromo() {
   });
 }
 
+function scrollToBooking() {
+  const booking = qs(".booking");
+  if (!booking) return;
+  booking.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 /** ------------- COURTS ------------- **/
 async function loadCourts() {
-  const { data, error } = await sb
-    .from("courts")
-    .select(
-      "id,name,slug,hero_image,card_image,hourly_rate,daily_rate,weekly_rate,is_active"
-    )
-    .eq("is_active", true)
-    .order("name", { ascending: true });
+  if (!sb) {
+    state.courts = DEMO_COURTS.slice();
+  } else {
+    const { data, error } = await sb
+      .from("courts")
+      .select(
+        "id,name,slug,hero_image,card_image,hourly_rate,daily_rate,weekly_rate,is_active"
+      )
+      .eq("is_active", true)
+      .order("name", { ascending: true });
 
-  if (error) {
-    console.error(error);
-    return;
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    state.courts = data || [];
   }
 
-  state.courts = data || [];
-
-  // Render categories and trending if containers exist
   renderCourtCategories();
   renderTrendingCourts();
 
-  // choose default court
   if (!state.selectedCourtId && state.courts.length) {
     setSelectedCourt(state.courts[0].id);
   }
 }
 
 function renderCourtCategories() {
-  const wrap = $("courtCategories");
+  const wrap = $("categoryCards");
   if (!wrap) return;
 
-  // Your requested views: Airport View, Lounge, Barbershop, Gym, Upskill Center, Indoor Arena
-  // We render what exists in DB. Ensure DB rows match those names.
   wrap.innerHTML = state.courts
     .map((c) => {
       const img = c.card_image || c.hero_image || "";
+      const hourly = formatNaira(c.hourly_rate || 0);
       return `
-        <button class="court-cat" type="button" data-court="${c.id}">
-          <div class="court-cat__img" style="background-image:url('${escapeAttr(
-            img
-          )}')"></div>
-          <div class="court-cat__label">${escapeHtml(c.name)}</div>
-          <div class="court-cat__arrow">↗</div>
-        </button>
-      `;
-    })
-    .join("");
-
-  qsa("[data-court]", wrap).forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const id = btn.getAttribute("data-court");
-      setSelectedCourt(id);
-      openBookingModal(); // optional: open booking
-    });
-  });
-}
-
-function renderTrendingCourts() {
-  const wrap = $("trendCourts");
-  if (!wrap) return;
-
-  wrap.innerHTML = state.courts
-    .slice(0, 4)
-    .map((c) => {
-      const img = c.hero_image || c.card_image || "";
-      const price = c.daily_rate ?? 0;
-      return `
-        <article class="trend-card">
-          <div class="trend-card__img" style="background-image:url('${escapeAttr(
-            img
-          )}')"></div>
-          <div class="trend-card__body">
-            <div class="trend-card__title">${escapeHtml(c.name)}</div>
-            <div class="trend-card__meta">
-              <span>₦${NGN.format(price)}/day</span>
-              <button class="pill primary trend-book" type="button" data-court="${
-                c.id
-              }">
-                Book Now
+        <article class="card">
+          <div class="card__img">
+            ${img ? `<img src="${escapeAttr(img)}" alt="${escapeHtml(c.name)}" />` : ""}
+          </div>
+          <div class="card__body">
+            <div class="card__title">
+              <b>${escapeHtml(c.name)}</b>
+              <span class="arrow">-></span>
+            </div>
+            <div class="card__desc">
+              Premium layout for events, ceremonies, and private runs.
+            </div>
+            <div class="card__foot">
+              <span class="pricepill">${hourly}/hour</span>
+              <button class="btn btn--light" type="button" data-court="${c.id}">
+                Book
               </button>
             </div>
           </div>
@@ -240,11 +287,52 @@ function renderTrendingCourts() {
     })
     .join("");
 
-  qsa(".trend-book", wrap).forEach((btn) => {
+  qsa("[data-court]", wrap).forEach((btn) => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-court");
       setSelectedCourt(id);
-      openBookingModal();
+      scrollToBooking();
+    });
+  });
+}
+
+function renderTrendingCourts() {
+  const wrap = $("trendingCards");
+  if (!wrap) return;
+
+  wrap.innerHTML = state.courts
+    .slice(0, 4)
+    .map((c) => {
+      const img = c.hero_image || c.card_image || "";
+      const price = formatNaira(c.daily_rate || 0);
+      return `
+        <article class="card trend">
+          <div class="card__img">
+            ${img ? `<img src="${escapeAttr(img)}" alt="${escapeHtml(c.name)}" />` : ""}
+          </div>
+          <div class="card__body">
+            <div class="card__title">
+              <b>${escapeHtml(c.name)}</b>
+              <span class="arrow">-></span>
+            </div>
+            <div class="card__desc">Popular this week.</div>
+            <div class="buyrow">
+              <span class="pricepill">${price}/day</span>
+              <button class="btn btn--light" type="button" data-court="${c.id}">
+                Book
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  qsa("[data-court]", wrap).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-court");
+      setSelectedCourt(id);
+      scrollToBooking();
     });
   });
 }
@@ -255,31 +343,20 @@ function setSelectedCourt(courtId) {
   const court = state.courts.find((c) => String(c.id) === String(courtId));
   if (!court) return;
 
-  // Update modal UI if present
-  if ($("selectedCourtName")) setText($("selectedCourtName"), court.name);
-
-  // If you have a court select dropdown in modal:
   if ($("courtSelect")) {
-    // populate once
     if (!$("courtSelect").dataset.bound) {
       $("courtSelect").innerHTML = state.courts
         .map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`)
         .join("");
       $("courtSelect").dataset.bound = "1";
-      $("courtSelect").addEventListener("change", async (e) => {
-        setSelectedCourt(e.target.value);
-        await refreshAvailability();
-        recalcPrice();
-      });
     }
     $("courtSelect").value = String(courtId);
   }
 
-  // Update price hint
   if ($("rateHint")) {
-    $("rateHint").textContent = `Hourly ₦${NGN.format(
+    $("rateHint").textContent = `Hourly ${formatNaira(
       court.hourly_rate
-    )} • Daily ₦${NGN.format(court.daily_rate)} • Weekly ₦${NGN.format(
+    )} | Daily ${formatNaira(court.daily_rate)} | Weekly ${formatNaira(
       court.weekly_rate
     )}`;
   }
@@ -290,121 +367,127 @@ function setSelectedCourt(courtId) {
 
 /** ------------- MODAL ------------- **/
 function openBookingModal() {
-  const bd = $("modalBackdrop");
-  if (!bd) return;
-
-  // default values
-  if ($("plan")) $("plan").value = state.plan;
-  if ($("qty")) $("qty").value = String(state.qty);
-  if ($("date")) $("date").value = state.startDate;
-  if ($("endDate")) $("endDate").value = state.endDate;
-  if ($("time")) $("time").value = state.startTime;
-
-  updatePlanFieldsUI();
-  recalcPrice();
-
-  show($("formError"), false);
-  show($("formSuccess"), false);
-
-  bd.style.display = "flex";
+  const modal = $("modal");
+  if (!modal) return;
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
+
+  renderBookingSummary();
+  showMessage("modalError", "", false);
+  showMessage("modalOk", "", false);
 }
 
 function closeBookingModal() {
-  const bd = $("modalBackdrop");
-  if (!bd) return;
-  bd.style.display = "none";
+  const modal = $("modal");
+  if (!modal) return;
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
 }
 
-function updatePlanFieldsUI() {
-  // Optional UI blocks: hours/days/weeks inputs
-  show($("hoursWrap"), state.plan === "Hourly");
-  show($("daysWrap"), state.plan === "Daily");
-  show($("weeksWrap"), state.plan === "Weekly");
+function renderBookingSummary() {
+  const el = $("bookingSummary");
+  if (!el) return;
 
-  // End date usage: for daily/weekly you may want end date visible
-  show($("endDateWrap"), state.plan !== "Hourly");
+  const court = state.courts.find(
+    (c) => String(c.id) === String(state.selectedCourtId)
+  );
+  const label = court ? court.name : "Selected court";
+  const dateLine =
+    state.plan === "Hourly"
+      ? `${state.startDate} at ${state.startTime}`
+      : `${state.startDate} to ${state.endDate}`;
+
+  el.textContent = `${label} | ${state.plan} | ${dateLine} | Total ${formatNaira(
+    state.pricing.total || 0
+  )}`;
+}
+
+function updatePlanFieldsUI() {
+  const isHourly = state.plan === "Hourly";
+  show($("durationField"), isHourly);
+  show($("endDateField"), !isHourly);
+
+  if (isHourly) {
+    state.endDate = state.startDate;
+  } else if (state.endDate < state.startDate) {
+    state.endDate = state.startDate;
+  }
+
+  syncInputsFromState();
+}
+
+function syncInputsFromState() {
+  if ($("dateInput")) $("dateInput").value = state.startDate;
+  if ($("endDateInput")) $("endDateInput").value = state.endDate;
+  if ($("timeInput")) $("timeInput").value = state.startTime;
+  if ($("durationInput")) $("durationInput").value = String(state.hours);
 }
 
 /** ------------- AVAILABILITY (CALENDAR) ------------- **/
 async function refreshAvailability() {
   if (!state.selectedCourtId) return;
 
-  // Decide date range: show current month by default
   const start = firstDayOfMonth(new Date(state.startDate));
   const end = lastDayOfMonth(new Date(state.startDate));
 
-  // Clear sets
   state.bookedDates = new Set();
   state.blockedDates = new Set();
 
-  // 1) booked dates
-  const { data: bookings, error: bErr } = await sb
-    .from("bookings")
-    .select("start_date,end_date,status")
-    .eq("court_id", state.selectedCourtId)
-    .in("status", ["pending", "confirmed"])
-    .gte("start_date", start.toISOString().slice(0, 10))
-    .lte("end_date", end.toISOString().slice(0, 10));
+  if (sb) {
+    const { data: bookings, error: bErr } = await sb
+      .from("bookings")
+      .select("start_date,end_date,status")
+      .eq("court_id", state.selectedCourtId)
+      .in("status", ["pending", "confirmed"])
+      .gte("start_date", start.toISOString().slice(0, 10))
+      .lte("end_date", end.toISOString().slice(0, 10));
 
-  if (bErr) console.error(bErr);
-  (bookings || []).forEach((bk) => {
-    expandDateRangeIntoSet(bk.start_date, bk.end_date, state.bookedDates);
-  });
+    if (bErr) console.error(bErr);
+    (bookings || []).forEach((bk) => {
+      expandDateRangeIntoSet(bk.start_date, bk.end_date, state.bookedDates);
+    });
 
-  // 2) blocks (admin can create)
-  const { data: blocks, error: blErr } = await sb
-    .from("availability_blocks")
-    .select("start_date,end_date")
-    .eq("court_id", state.selectedCourtId)
-    .gte("start_date", start.toISOString().slice(0, 10))
-    .lte("end_date", end.toISOString().slice(0, 10));
+    const { data: blocks, error: blErr } = await sb
+      .from("availability_blocks")
+      .select("start_date,end_date")
+      .eq("court_id", state.selectedCourtId)
+      .gte("start_date", start.toISOString().slice(0, 10))
+      .lte("end_date", end.toISOString().slice(0, 10));
 
-  if (blErr) console.error(blErr);
-  (blocks || []).forEach((bl) => {
-    expandDateRangeIntoSet(bl.start_date, bl.end_date, state.blockedDates);
-  });
-
-  // Update calendar UI
-  if ($("availabilityCalendar")) {
-    paintCalendar();
+    if (blErr) console.error(blErr);
+    (blocks || []).forEach((bl) => {
+      expandDateRangeIntoSet(bl.start_date, bl.end_date, state.blockedDates);
+    });
   }
 
-  // If currently selected dates are blocked/booked, show warning
-  if (isRangeUnavailable(state.startDate, state.endDate)) {
-    showError("Selected dates are unavailable. Please choose another date.");
-  } else {
-    clearError();
-  }
+  paintCalendar();
+  updateAvailabilityStatus();
 }
 
 function renderCalendar(baseDate) {
-  const el = $("availabilityCalendar");
+  const el = $("calendar");
   if (!el) return;
 
   const d = new Date(baseDate);
   const monthLabel = d.toLocaleString("en", { month: "long", year: "numeric" });
 
   el.innerHTML = `
-    <div class="cal-head">
-      <button type="button" class="cal-nav" id="calPrev">‹</button>
-      <div class="cal-title" id="calTitle">${monthLabel}</div>
-      <button type="button" class="cal-nav" id="calNext">›</button>
+    <div class="cal__head">
+      <button type="button" class="cal__btn" id="calPrev">&lt;</button>
+      <b id="calTitle">${monthLabel}</b>
+      <button type="button" class="cal__btn" id="calNext">&gt;</button>
     </div>
-    <div class="cal-grid" id="calGrid"></div>
-    <div class="cal-legend">
-      <span class="cal-pill cal-pill--free">Available</span>
-      <span class="cal-pill cal-pill--busy">Booked</span>
-      <span class="cal-pill cal-pill--block">Blocked</span>
-      <span class="cal-pill cal-pill--sel">Selected</span>
-    </div>
+    <div class="cal__grid" id="calDow"></div>
+    <div class="cal__grid" id="calGrid"></div>
   `;
 
   $("calPrev").addEventListener("click", async () => {
     const nd = addMonths(new Date(state.startDate), -1);
     state.startDate = nd.toISOString().slice(0, 10);
-    if ($("date")) $("date").value = state.startDate;
+    if (state.plan === "Hourly") state.endDate = state.startDate;
+    syncInputsFromState();
     renderCalendar(nd);
     await refreshAvailability();
   });
@@ -412,10 +495,15 @@ function renderCalendar(baseDate) {
   $("calNext").addEventListener("click", async () => {
     const nd = addMonths(new Date(state.startDate), +1);
     state.startDate = nd.toISOString().slice(0, 10);
-    if ($("date")) $("date").value = state.startDate;
+    if (state.plan === "Hourly") state.endDate = state.startDate;
+    syncInputsFromState();
     renderCalendar(nd);
     await refreshAvailability();
   });
+
+  const dow = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dowCells = dow.map((d) => `<div class="cal__dow">${d}</div>`).join("");
+  if ($("calDow")) $("calDow").innerHTML = dowCells;
 
   paintCalendar();
 }
@@ -436,13 +524,13 @@ function paintCalendar() {
     });
   }
 
-  // pad with weekday offset
-  const startWeekday = monthStart.getDay(); // 0-6
+  const startWeekday = monthStart.getDay();
   const daysInMonth = monthEnd.getDate();
 
   const cells = [];
-  for (let i = 0; i < startWeekday; i++)
-    cells.push(`<div class="cal-cell cal-cell--empty"></div>`);
+  for (let i = 0; i < startWeekday; i++) {
+    cells.push(`<div class="cal__day is-muted"></div>`);
+  }
 
   for (let day = 1; day <= daysInMonth; day++) {
     const iso = new Date(d.getFullYear(), d.getMonth(), day)
@@ -454,10 +542,10 @@ function paintCalendar() {
     const isSelected = isWithinSelected(iso);
 
     const cls = [
-      "cal-cell",
-      isBooked ? "cal-cell--busy" : "",
-      isBlocked ? "cal-cell--block" : "",
-      isSelected ? "cal-cell--sel" : "",
+      "cal__day",
+      isSelected ? "is-selected" : "",
+      isBooked || isBlocked ? "is-busy" : "",
+      isBooked || isBlocked ? "is-muted" : "",
     ]
       .filter(Boolean)
       .join(" ");
@@ -477,40 +565,25 @@ function paintCalendar() {
     btn.addEventListener("click", async () => {
       const iso = btn.getAttribute("data-iso");
 
-      // Single-date select: hourly uses just startDate
       if (state.plan === "Hourly") {
         state.startDate = iso;
         state.endDate = iso;
       } else {
-        // Range select: if same day clicked twice, set range end = start
         if (!state.startDate || state.startDate === state.endDate) {
           state.startDate = iso;
           state.endDate = iso;
+        } else if (iso < state.startDate) {
+          state.endDate = state.startDate;
+          state.startDate = iso;
         } else {
-          // set end date, ensure order
-          if (iso < state.startDate) {
-            state.endDate = state.startDate;
-            state.startDate = iso;
-          } else {
-            state.endDate = iso;
-          }
+          state.endDate = iso;
         }
       }
 
-      if ($("date")) $("date").value = state.startDate;
-      if ($("endDate")) $("endDate").value = state.endDate;
-
-      // validate availability
-      if (isRangeUnavailable(state.startDate, state.endDate)) {
-        showError(
-          "Selected dates are unavailable. Please choose another date."
-        );
-      } else {
-        clearError();
-      }
-
-      paintCalendar();
+      syncInputsFromState();
+      await refreshAvailability();
       recalcPrice();
+      $("calendar")?.classList.remove("is-open");
     });
   });
 }
@@ -548,6 +621,37 @@ function addMonths(d, n) {
   return new Date(d.getFullYear(), d.getMonth() + n, 1);
 }
 
+function updateAvailabilityStatus() {
+  const status = $("availabilityStatus");
+  if (!status) return;
+
+  if (!sb) {
+    status.classList.remove("is-bad");
+    status.classList.add("is-good");
+    status.textContent = "Connect Supabase to see live availability.";
+    setBookNowEnabled(true);
+    return;
+  }
+
+  if (isRangeUnavailable(state.startDate, state.endDate)) {
+    status.classList.add("is-bad");
+    status.classList.remove("is-good");
+    status.textContent = "Selected dates are unavailable.";
+    setBookNowEnabled(false);
+  } else {
+    status.classList.remove("is-bad");
+    status.classList.add("is-good");
+    status.textContent = "Dates available. Continue to reserve.";
+    setBookNowEnabled(true);
+  }
+}
+
+function setBookNowEnabled(on) {
+  const btn = $("bookNowBtn");
+  if (!btn) return;
+  btn.disabled = !on;
+}
+
 /** ------------- PRICING ------------- **/
 function recalcPrice() {
   const court = state.courts.find(
@@ -558,46 +662,32 @@ function recalcPrice() {
   let base = 0;
 
   if (state.plan === "Hourly") {
-    // default: 1–12 hours
-    const hours = clamp(Number($("hours")?.value || state.hours), 1, 12);
+    const hours = clamp(Number($("durationInput")?.value || state.hours), 1, 12);
     state.hours = hours;
-    base = court.hourly_rate * hours;
+    base = (court.hourly_rate || 0) * hours;
   }
 
   if (state.plan === "Daily") {
-    // days derived from date range OR manual input
     const days = daysBetweenInclusive(state.startDate, state.endDate);
-    state.days = days;
-    base = court.daily_rate * days;
+    base = (court.daily_rate || 0) * days;
   }
 
   if (state.plan === "Weekly") {
     const days = daysBetweenInclusive(state.startDate, state.endDate);
     const weeks = Math.max(1, Math.ceil(days / 7));
-    state.weeks = weeks;
-    base = court.weekly_rate * weeks;
+    base = (court.weekly_rate || 0) * weeks;
   }
 
-  // quantity multiplier (extra courts/lanes later). For now treat as court “slots”
-  base = base * clamp(Number($("qty")?.value || 1), 1, 30);
-
-  // promo
   const discount = computeDiscount(base, state.promo);
   const total = Math.max(0, base - discount);
-
   state.pricing = { base, discount, total };
 
-  // Update UI if present
-  if ($("priceBase")) $("priceBase").textContent = `₦${NGN.format(base)}`;
-  if ($("priceDiscount"))
-    $("priceDiscount").textContent = `- ₦${NGN.format(discount)}`;
-  if ($("priceTotal")) $("priceTotal").textContent = `₦${NGN.format(total)}`;
+  setText($("subtotalText"), formatNaira(base));
+  setText($("discountText"), formatNaira(discount));
+  setText($("totalText"), formatNaira(total));
 
-  if ($("promoApplied")) {
-    $("promoApplied").textContent = state.promo
-      ? `Promo applied: ${state.promo.code}`
-      : "";
-  }
+  renderBookingSummary();
+  updateAvailabilityStatus();
 }
 
 function daysBetweenInclusive(startISO, endISO) {
@@ -621,12 +711,17 @@ function computeDiscount(baseAmount, promo) {
 
 /** ------------- PROMO ------------- **/
 async function applyPromo() {
-  clearError();
+  showPromoHelp("", "");
 
-  const code = ($("promoCode")?.value || "").trim().toUpperCase();
+  const code = ($("promoInput")?.value || "").trim().toUpperCase();
   if (!code) {
     state.promo = null;
     recalcPrice();
+    return;
+  }
+
+  if (!sb) {
+    showPromoHelp("Connect Supabase to enable promo codes.", "bad");
     return;
   }
 
@@ -640,12 +735,12 @@ async function applyPromo() {
 
   if (error) {
     console.error(error);
-    showError("Promo lookup failed. Try again.");
+    showPromoHelp("Promo lookup failed. Try again.", "bad");
     return;
   }
 
   if (!data || !data.is_active) {
-    showError("Invalid promo code.");
+    showPromoHelp("Invalid promo code.", "bad");
     state.promo = null;
     recalcPrice();
     return;
@@ -653,13 +748,13 @@ async function applyPromo() {
 
   const now = new Date();
   if (data.starts_at && now < new Date(data.starts_at)) {
-    showError("Promo is not active yet.");
+    showPromoHelp("Promo is not active yet.", "bad");
     state.promo = null;
     recalcPrice();
     return;
   }
   if (data.ends_at && now > new Date(data.ends_at)) {
-    showError("Promo has expired.");
+    showPromoHelp("Promo has expired.", "bad");
     state.promo = null;
     recalcPrice();
     return;
@@ -668,29 +763,7 @@ async function applyPromo() {
     data.max_redemptions != null &&
     data.redeemed_count >= data.max_redemptions
   ) {
-    showError("Promo limit reached.");
-    state.promo = null;
-    recalcPrice();
-    return;
-  }
-
-  // min amount check uses base
-  const court = state.courts.find(
-    (c) => String(c.id) === String(state.selectedCourtId)
-  );
-  if (!court) return;
-
-  // compute base without promo to check min_amount
-  state.promo = null;
-  recalcPrice();
-  const base = state.pricing.base;
-
-  if (data.min_amount != null && base < data.min_amount) {
-    showError(
-      `Minimum booking amount for this promo is ₦${NGN.format(
-        data.min_amount
-      )}.`
-    );
+    showPromoHelp("Promo limit reached.", "bad");
     state.promo = null;
     recalcPrice();
     return;
@@ -703,46 +776,50 @@ async function applyPromo() {
     value: data.value,
   };
   recalcPrice();
+  showPromoHelp(`Promo applied: ${data.code}`, "good");
 }
 
-async function incrementPromoUsage(promoId) {
-  if (!promoId) return;
-
-  // NOTE: this is not perfectly race-safe in pure client JS.
-  // For production, use a Supabase RPC (transaction) or Edge Function.
-  const { error } = await sb
-    .from("promo_codes")
-    .update({ redeemed_count: sb.rpc ? undefined : undefined }) // placeholder
-    .eq("id", promoId);
-
-  // We will do the correct approach via SQL RPC below.
-  // Leaving this as a no-op to avoid incorrect increments.
-  if (error) console.error(error);
+function showPromoHelp(msg, tone) {
+  const help = $("promoHelp");
+  if (!help) return;
+  help.textContent = msg;
+  help.classList.remove("is-bad", "is-good");
+  if (tone === "bad") help.classList.add("is-bad");
+  if (tone === "good") help.classList.add("is-good");
 }
 
 /** ------------- BOOKING SUBMIT ------------- **/
+$("confirmBooking")?.addEventListener("click", submitBooking);
+
 async function submitBooking() {
-  clearError();
-  show($("formSuccess"), false);
+  showMessage("modalError", "", false);
+  showMessage("modalOk", "", false);
 
-  if (!state.selectedCourtId) return showError("Select a court first.");
-
-  // Validate dates vs availability sets (calendar)
-  if (isRangeUnavailable(state.startDate, state.endDate)) {
-    return showError(
-      "Selected dates are unavailable. Please choose another date."
-    );
+  if (!state.selectedCourtId) {
+    showMessage("modalError", "Select a court first.", true);
+    return;
   }
 
-  const name = ($("name")?.value || "").trim();
-  const phone = ($("phone")?.value || "").trim();
-  const email = ($("email")?.value || "").trim();
-  const mode = ($("mode")?.value || "Pickup").trim();
+  if (sb && isRangeUnavailable(state.startDate, state.endDate)) {
+    showMessage(
+      "modalError",
+      "Selected dates are unavailable. Please choose another date.",
+      true
+    );
+    return;
+  }
 
-  if (!name || !phone || !email)
-    return showError("Please fill in name, phone, and email.");
+  const name = ($("custName")?.value || "").trim();
+  const phone = ($("custPhone")?.value || "").trim();
+  const email = ($("custEmail")?.value || "").trim();
+  const eventType = ($("eventType")?.value || "").trim();
+  const notes = ($("notes")?.value || "").trim();
 
-  // Ensure we have latest pricing
+  if (!name || !phone || !email) {
+    showMessage("modalError", "Please fill in name, phone, and email.", true);
+    return;
+  }
+
   recalcPrice();
 
   const payload = {
@@ -751,7 +828,7 @@ async function submitBooking() {
     start_date: state.startDate,
     end_date: state.endDate,
     start_time: state.startTime,
-    qty: state.qty,
+    hours: state.plan === "Hourly" ? state.hours : null,
     base_amount: state.pricing.base,
     discount_amount: state.pricing.discount,
     total_amount: state.pricing.total,
@@ -759,12 +836,20 @@ async function submitBooking() {
     customer_name: name,
     customer_phone: phone,
     customer_email: email,
-    mode,
+    event_type: eventType,
+    notes,
     status: "pending",
-    notes: ($("notes")?.value || "").trim(),
   };
 
-  // Insert booking
+  if (!sb) {
+    showMessage(
+      "modalOk",
+      "Demo mode: booking captured locally. Connect Supabase to save it.",
+      true
+    );
+    return;
+  }
+
   const { data, error } = await sb
     .from("bookings")
     .insert(payload)
@@ -773,44 +858,24 @@ async function submitBooking() {
 
   if (error) {
     console.error(error);
-    return showError("Booking failed. Please try again.");
+    showMessage("modalError", "Booking failed. Please try again.", true);
+    return;
   }
 
-  // If promo used, we increment with an RPC recommended in SQL section
-  // For now, we just show success.
-  show($("formSuccess"), true);
-  if ($("formSuccess"))
-    $("formSuccess").textContent =
-      "Booking created. We will contact you to confirm.";
-
-  // Refresh availability so the calendar updates instantly
-  await refreshAvailability();
-
-  alert(
-    `Booking created (pending)\n\n` +
-      `Ref: ${data.id}\n` +
-      `Plan: ${payload.plan}\n` +
-      `Dates: ${payload.start_date} → ${payload.end_date}\n` +
-      `Total: ₦${NGN.format(payload.total_amount)}\n\n` +
-      `Next: connect payment + confirmation workflow.`
+  showMessage(
+    "modalOk",
+    `Booking created. Ref: ${data.id}. We will contact you to confirm.`,
+    true
   );
 
-  closeBookingModal();
+  await refreshAvailability();
 }
 
-/** ------------- ERRORS ------------- **/
-function showError(msg) {
-  const err = $("formError");
-  if (!err) return;
-  err.textContent = msg;
-  err.style.display = "block";
-}
-
-function clearError() {
-  const err = $("formError");
-  if (!err) return;
-  err.textContent = "";
-  err.style.display = "none";
+function showMessage(id, msg, on) {
+  const el = $(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = on ? "block" : "none";
 }
 
 /** ------------- ESCAPE HELPERS ------------- **/
@@ -823,6 +888,5 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 function escapeAttr(str) {
-  // for inline style url('...')
-  return String(str || "").replaceAll("'", "%27");
+  return String(str || "").replaceAll('"', "%22");
 }
