@@ -540,6 +540,49 @@ option {
   display: grid;
   gap: 12px;
 }
+.contact-card {
+  background: linear-gradient(
+    160deg,
+    rgba(110, 168, 255, 0.12),
+    rgba(255, 255, 255, 0.02)
+  );
+}
+.contact-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.contact-card__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+.contact-card__icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.contact-card__value {
+  font-weight: 800;
+  color: var(--text);
+  text-decoration: none;
+}
+.contact-card__value:hover {
+  text-decoration: underline;
+}
+.contact-card__note {
+  font-size: 12px;
+  color: var(--muted);
+}
 
 /* Trending cards */
 .cards--trending {
@@ -581,9 +624,14 @@ option {
   gap: 12px;
   align-items: flex-start;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  background: linear-gradient(
+    160deg,
+    rgba(110, 168, 255, 0.12),
+    rgba(255, 255, 255, 0.02)
+  );
   border-radius: 18px;
   padding: 14px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
 }
 .strip__meta {
   display: grid;
@@ -600,6 +648,8 @@ option {
   border-radius: 14px;
   display: grid;
   place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text);
 }
 .strip__icon-svg {
@@ -664,6 +714,60 @@ option {
 .promoBanner__badge span {
   font-weight: 800;
   opacity: 0.9;
+}
+
+/* Location */
+.location-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 26px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.25));
+  box-shadow: var(--shadow);
+  max-width: 50%;
+  margin-right: auto;
+}
+.location-map {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: rgba(255, 255, 255, 0.04);
+}
+.location-map iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.location-body {
+  padding: 14px 16px 18px;
+  display: grid;
+  gap: 8px;
+}
+.location-body h3 {
+  margin: 0;
+  font-size: 20px;
+}
+.location-body p {
+  margin: 0;
+  color: var(--muted);
+}
+.location-btn {
+  width: fit-content;
+  padding: 10px 18px;
+  border-radius: 999px;
+}
+.contact-split {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: start;
+}
+.contact-split .cards--contact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 0;
+}
+.contact-split .location-card {
+  max-width: 420px;
+  margin-right: 0;
+  margin-left: auto;
 }
 
 /* FAQ */
@@ -889,6 +993,13 @@ option {
   .promoBanner__badge {
     min-width: unset;
   }
+  .contact-split {
+    grid-template-columns: 1fr;
+  }
+  .contact-split .location-card {
+    max-width: 100%;
+    margin-left: 0;
+  }
 }
 @media (max-width: 720px) {
   .nav__links {
@@ -961,6 +1072,9 @@ option {
   .modal__body {
     overflow-y: auto;
     max-height: calc(90vh - 120px);
+  }
+  .location-card {
+    max-width: 100%;
   }
 }
 
