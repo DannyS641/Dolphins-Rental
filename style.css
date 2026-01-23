@@ -904,12 +904,14 @@ option {
     display: inline-flex;
   }
   .nav__inner {
-    flex-wrap: wrap;
-    row-gap: 10px;
+    flex-wrap: nowrap;
+    gap: 10px;
   }
   .nav__actions {
-    width: 100%;
+    width: auto;
     justify-content: flex-end;
+    flex: 1;
+    min-width: 0;
   }
   .brand__text b {
     font-size: 16px;

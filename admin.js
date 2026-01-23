@@ -31,7 +31,6 @@ function showMsg(id, msg, tone) {
   if (tone === "good") el.classList.add("is-good");
 }
 
-/** ------------- STATE ------------- **/
 const state = {
   courts: [],
   bookings: [],
