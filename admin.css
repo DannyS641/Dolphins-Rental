@@ -1,0 +1,192 @@
+:root {
+  --admin-bg: #0b0d12;
+  --admin-card: rgba(255, 255, 255, 0.03);
+  --admin-line: rgba(255, 255, 255, 0.1);
+}
+
+body {
+  background: var(--admin-bg);
+}
+
+.admin-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  border-bottom: 1px solid var(--admin-line);
+  background: rgba(7, 9, 18, 0.8);
+}
+.admin-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+}
+.admin-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.admin-muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.admin-main {
+  padding: 24px 0 60px;
+  display: grid;
+  gap: 18px;
+}
+.admin-auth {
+  display: none;
+}
+.admin-auth.is-active {
+  display: block;
+}
+.admin-auth__panel {
+  max-width: 520px;
+  margin: 0 auto;
+}
+.admin-auth__form {
+  grid-template-columns: 1fr;
+}
+.admin-app {
+  display: none;
+}
+.admin-app.is-active {
+  display: grid;
+  gap: 18px;
+}
+.admin-panel {
+  border: 1px solid var(--admin-line);
+  background: var(--admin-card);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.admin-panel__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.admin-panel h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.admin-actions input,
+.admin-actions select {
+  border: 1px solid var(--admin-line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+.admin-actions select,
+.admin-actions option,
+.admin-form select,
+.admin-form option {
+  color: var(--text);
+  background-color: var(--admin-bg);
+}
+
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.admin-form input,
+.admin-form select {
+  border: 1px solid var(--admin-line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.admin-form .btn {
+  width: 100%;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-table-wrap {
+  overflow: auto;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--admin-line);
+  font-size: 13px;
+}
+.admin-table th {
+  color: var(--muted);
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.02);
+}
+.admin-table td b {
+  font-weight: 800;
+}
+.admin-table .pill {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid var(--admin-line);
+}
+.pill.pending {
+  color: #f2c94c;
+}
+.pill.confirmed {
+  color: #6ee7b7;
+}
+.pill.rejected {
+  color: #fca5a5;
+}
+
+.admin-msg {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.admin-msg.is-bad {
+  color: #fca5a5;
+}
+.admin-msg.is-good {
+  color: #6ee7b7;
+}
+
+@media (max-width: 1000px) {
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .admin-form {
+    grid-template-columns: 1fr;
+  }
+}

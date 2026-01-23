@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dolphins Courts Admin</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="admin.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="admin.js"></script>
+  </head>
+
+  <body>
+    <header class="admin-header">
+      <div class="container admin-header__inner">
+        <div class="admin-brand">
+          <img
+            class="brand__mark"
+            src="assets/img/adrenale.png"
+            alt="Adrenale"
+          />
+          <div>
+            <b>Admin</b>
+            <div class="admin-muted">Dolphins Courts</div>
+          </div>
+        </div>
+        <div class="admin-header__actions">
+          <button class="btn btn--light" id="signOutBtn" type="button">
+            Sign out
+          </button>
+          <a class="btn btn--light" href="./index.html">Back to site</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container admin-main">
+      <section class="admin-auth" id="adminAuth">
+        <div class="admin-panel admin-auth__panel">
+          <h2>Admin login</h2>
+          <p class="admin-muted">
+            Sign in to manage bookings, blocks, and promo codes.
+          </p>
+          <form class="admin-form admin-auth__form" id="loginForm">
+            <input
+              id="loginEmail"
+              type="email"
+              placeholder="Email"
+              required
+            />
+            <input
+              id="loginPassword"
+              type="password"
+              placeholder="Password"
+              required
+            />
+            <button class="btn btn--dark" type="submit">Sign in</button>
+          </form>
+          <div class="admin-msg" id="loginMsg"></div>
+        </div>
+      </section>
+
+      <div id="adminApp" class="admin-app" aria-hidden="true">
+      <section class="admin-panel">
+        <div class="admin-panel__head">
+          <h2>Bookings</h2>
+          <div class="admin-actions">
+            <input
+              id="bookingSearch"
+              type="search"
+              placeholder="Search name, email, phone, court..."
+            />
+            <select id="bookingStatusFilter">
+              <option value="all">All</option>
+              <option value="pending" selected>Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            <button class="btn btn--light" id="refreshBookings" type="button">
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="admin-msg" id="bookingMsg"></div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="bookingTable">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Court</th>
+                <th>Plan</th>
+                <th>Dates</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bookingBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-grid">
+        <div class="admin-panel">
+          <div class="admin-panel__head">
+            <h2>Availability Blocks</h2>
+          </div>
+          <form class="admin-form" id="blockForm">
+            <select id="blockCourt"></select>
+            <input id="blockStart" type="date" required />
+            <input id="blockEnd" type="date" required />
+            <button class="btn btn--dark" type="submit">Add block</button>
+          </form>
+          <div class="admin-msg" id="blockMsg"></div>
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="blockTable">
+              <thead>
+                <tr>
+                  <th>Court</th>
+                  <th>Start</th>
+                  <th>End</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="blockBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="admin-panel">
+          <div class="admin-panel__head">
+            <h2>Promo Codes</h2>
+          </div>
+          <form class="admin-form" id="promoForm">
+            <input id="promoCode" type="text" placeholder="CODE" required />
+            <select id="promoType">
+              <option value="percent">percent</option>
+              <option value="fixed">fixed</option>
+            </select>
+            <input id="promoValue" type="number" min="0" required />
+            <input id="promoMin" type="number" min="0" placeholder="Min NGN" />
+            <input id="promoMax" type="number" min="0" placeholder="Max uses" />
+            <input id="promoStart" type="date" />
+            <input id="promoEnd" type="date" />
+            <button class="btn btn--dark" type="submit">Add promo</button>
+          </form>
+          <div class="admin-msg" id="promoMsg"></div>
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="promoTable">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Type</th>
+                  <th>Value</th>
+                  <th>Active</th>
+                  <th>Usage</th>
+                </tr>
+              </thead>
+              <tbody id="promoBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-panel">
+        <div class="admin-panel__head">
+          <h2>Courts</h2>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="courtTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Slug</th>
+                <th>Hourly</th>
+                <th>Daily</th>
+                <th>Weekly</th>
+                <th>Active</th>
+              </tr>
+            </thead>
+            <tbody id="courtBody"></tbody>
+          </table>
+        </div>
+      </section>
+      </div>
+    </main>
+  </body>
+</html>

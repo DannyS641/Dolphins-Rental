@@ -4,8 +4,9 @@
    ========================================================= */
 
 /** ------------- CONFIG (REPLACE THESE) ------------- **/
-const SUPABASE_URL = "YOUR_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const SUPABASE_URL = "https://nxolazivbugqiglgxvmf.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54b2xheml2YnVncWlnbGd4dm1mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxMDU2MjQsImV4cCI6MjA4NDY4MTYyNH0.ap6D8cjxDDl4w3WWLP-WvfILc2JwZxFa8rD_JUdrqS8";
 
 /** Optional: currency formatting **/
 const NGN = new Intl.NumberFormat("en-NG");
@@ -28,13 +29,35 @@ const DEMO_COURTS = [
     slug: "indoor-arena",
     hero_image: "",
     card_image: "",
-    hourly_rate: 20000,
+    hourly_rate: 35000,
     daily_rate: 140000,
     weekly_rate: 850000,
     is_active: true,
   },
   {
     id: "demo-2",
+    name: "Lounge",
+    slug: "lounge",
+    hero_image: "",
+    card_image: "",
+    hourly_rate: 12000,
+    daily_rate: 90000,
+    weekly_rate: 520000,
+    is_active: true,
+  },
+  {
+    id: "demo-3",
+    name: "Gym",
+    slug: "gym",
+    hero_image: "",
+    card_image: "",
+    hourly_rate: 10000,
+    daily_rate: 75000,
+    weekly_rate: 450000,
+    is_active: true,
+  },
+  {
+    id: "demo-4",
     name: "Airport View",
     slug: "airport-view",
     hero_image: "",
@@ -45,25 +68,25 @@ const DEMO_COURTS = [
     is_active: true,
   },
   {
-    id: "demo-3",
-    name: "Lounge Court",
-    slug: "lounge-court",
+    id: "demo-5",
+    name: "Barbershop",
+    slug: "barbershop",
     hero_image: "",
     card_image: "",
     hourly_rate: 12000,
-    daily_rate: 90000,
-    weekly_rate: 520000,
+    daily_rate: 82000,
+    weekly_rate: 480000,
     is_active: true,
   },
   {
-    id: "demo-4",
-    name: "Gym View",
-    slug: "gym-view",
+    id: "demo-6",
+    name: "Upskill Center",
+    slug: "upskill",
     hero_image: "",
     card_image: "",
-    hourly_rate: 10000,
-    daily_rate: 75000,
-    weekly_rate: 450000,
+    hourly_rate: 14000,
+    daily_rate: 98000,
+    weekly_rate: 560000,
     is_active: true,
   },
 ];
@@ -74,6 +97,68 @@ const COURT_IMAGES = [
   { key: "barbershop", src: "assets/img/barbershop.jpg" },
   { key: "gym", src: "assets/img/gym.jpg" },
   { key: "lounge", src: "assets/img/lounge.jpg" },
+  { key: "upskill", src: "assets/img/upskill.jpg" },
+];
+
+const USAGE_ITEMS = [
+  {
+    icon: `
+      <svg class="strip__icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 4h10v3a5 5 0 0 1-10 0z"></path>
+        <path d="M7 5H5a3 3 0 0 0 3 3"></path>
+        <path d="M17 5h2a3 3 0 0 1-3 3"></path>
+        <path d="M12 12v3"></path>
+        <path d="M9 19h6"></path>
+        <path d="M10 15h4"></path>
+      </svg>
+    `,
+    title: "Tournaments",
+    copy: "League games, finals, and showcases.",
+  },
+  {
+    icon: `
+      <svg class="strip__icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 8l9-4 9 4"></path>
+        <rect x="4" y="8" width="16" height="12" rx="1"></rect>
+        <path d="M9 20v-5h6v5"></path>
+        <path d="M7 12h2M11 12h2M15 12h2"></path>
+      </svg>
+    `,
+    title: "School events",
+    copy: "Sports days, inter-house, assemblies.",
+  },
+  {
+    icon: `
+      <svg class="strip__icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="9" cy="12" r="4"></circle>
+        <circle cx="15" cy="12" r="4"></circle>
+        <path d="M12 6l2-2 2 2-2 2z"></path>
+      </svg>
+    `,
+    title: "Weddings",
+    copy: "Reception layouts, vendor staging.",
+  },
+  {
+    icon: `
+      <svg class="strip__icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3c-1 1-1 2-1 3 0 1 1 2 2 2s2-1 2-2c0-1-1-2-1-3"></path>
+        <rect x="9" y="9" width="6" height="11" rx="1"></rect>
+        <path d="M9 13h6"></path>
+      </svg>
+    `,
+    title: "Funerals",
+    copy: "Overflow seating, organized gathering.",
+  },
+  {
+    icon: `
+      <svg class="strip__icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+        <path d="M8 8h2M14 8h2M8 12h2M14 12h2M8 16h2M14 16h2"></path>
+      </svg>
+    `,
+    title: "Corporate events",
+    copy: "Team bonding, product showcases.",
+  },
 ];
 
 /** ------------- DOM HELPERS ------------- **/
@@ -124,6 +209,7 @@ const state = {
   pricing: { base: 0, discount: 0, total: 0 },
   blockedDates: new Set(), // YYYY-MM-DD
   bookedDates: new Set(), // YYYY-MM-DD
+  receipt: { html: "", filename: "" },
 };
 
 /** ------------- INIT ------------- **/
@@ -133,31 +219,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   wireGlobalButtons();
   wireBookingForm();
   wirePromo();
+  wireReceiptModal();
+  renderUsageStrip();
 
   await loadCourts();
-  renderCalendar(new Date());
   await refreshAvailability();
 
   updatePlanFieldsUI();
   syncInputsFromState();
   recalcPrice();
+  setupScrollReveal();
 });
 
 /** ------------- UI WIRING ------------- **/
 function wireGlobalButtons() {
   $("scrollBook")?.addEventListener("click", scrollToBooking);
   $("bannerBookBtn")?.addEventListener("click", scrollToBooking);
-
-  $("openCalendar")?.addEventListener("click", () => {
-    $("calendar")?.classList.toggle("is-open");
-  });
-
-  document.addEventListener("click", (e) => {
-    const cal = $("calendar");
-    const btn = $("openCalendar");
-    if (!cal || !btn) return;
-    if (cal.contains(e.target) || btn.contains(e.target)) return;
-    cal.classList.remove("is-open");
+  $("navToggle")?.addEventListener("click", toggleMobileMenu);
+  qsa("#mobileMenu a").forEach((link) => {
+    link.addEventListener("click", closeMobileMenu);
   });
 
   $("bookNowBtn")?.addEventListener("click", openBookingModal);
@@ -170,6 +250,82 @@ function wireGlobalButtons() {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeBookingModal();
   });
+}
+
+function toggleMobileMenu() {
+  const menu = $("mobileMenu");
+  const toggle = $("navToggle");
+  if (!menu || !toggle) return;
+  const isOpen = menu.classList.toggle("is-open");
+  menu.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+}
+
+function closeMobileMenu() {
+  const menu = $("mobileMenu");
+  const toggle = $("navToggle");
+  if (!menu || !toggle) return;
+  menu.classList.remove("is-open");
+  menu.setAttribute("aria-hidden", "true");
+  toggle.setAttribute("aria-expanded", "false");
+}
+
+function wireReceiptModal() {
+  $("closeReceipt")?.addEventListener("click", closeReceiptModal);
+  $("cancelReceipt")?.addEventListener("click", closeReceiptModal);
+  $("receiptBackdrop")?.addEventListener("click", (e) => {
+    if (e.target === $("receiptBackdrop")) closeReceiptModal();
+  });
+  $("downloadReceipt")?.addEventListener("click", downloadReceipt);
+}
+
+function renderUsageStrip() {
+  const wrap = $("usageStrip");
+  if (!wrap) return;
+  wrap.innerHTML = USAGE_ITEMS.map((item) => {
+    return `
+      <div class="strip__item">
+        <div class="strip__meta">
+          <div class="strip__head">
+            <span class="strip__icon">${item.icon}</span>
+            <b>${escapeHtml(item.title)}</b>
+          </div>
+          <p>${escapeHtml(item.copy)}</p>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function setupScrollReveal() {
+  const targets = qsa(
+    ".section, .strip, .promoBanner, .footer, .booking, .court-view, .card"
+  );
+  if (!targets.length) return;
+
+  targets.forEach((el, idx) => {
+    el.classList.add("reveal");
+    el.style.setProperty("--reveal-delay", `${Math.min(idx * 60, 420)}ms`);
+  });
+
+  if (!("IntersectionObserver" in window)) {
+    targets.forEach((el) => el.classList.add("reveal--in"));
+    return;
+  }
+
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("reveal--in");
+          io.unobserve(entry.target);
+        }
+      });
+    },
+    { rootMargin: "0px 0px -10% 0px", threshold: 0.15 }
+  );
+
+  targets.forEach((el) => io.observe(el));
 }
 
 function wireBookingForm() {
@@ -248,10 +404,13 @@ async function loadCourts() {
 
     if (error) {
       console.error(error);
-      return;
+      state.courts = DEMO_COURTS.slice();
+    } else {
+      state.courts = data || [];
+      if (!state.courts.length) {
+        state.courts = DEMO_COURTS.slice();
+      }
     }
-
-    state.courts = data || [];
   }
 
   renderCourtCategories();
@@ -386,6 +545,107 @@ function closeBookingModal() {
   document.body.style.overflow = "";
 }
 
+function openReceiptModal() {
+  const modal = $("receiptModal");
+  if (!modal) return;
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeReceiptModal() {
+  const modal = $("receiptModal");
+  if (!modal) return;
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function renderReceipt(payload, ref) {
+  const receiptEl = $("receiptContent");
+  if (!receiptEl) return;
+
+  const court = state.courts.find(
+    (c) => String(c.id) === String(payload.court_id)
+  );
+  const name = court ? court.name : "Selected court";
+  const dates =
+    payload.plan === "Hourly"
+      ? `${payload.start_date} ${payload.start_time}`
+      : `${payload.start_date} to ${payload.end_date}`;
+  const receiptId = ref || "pending";
+  const issuedAt = new Date().toLocaleString("en-NG");
+
+  const rows = [
+    ["Court", name],
+    ["Plan", payload.plan],
+    ["Dates", dates],
+    ["Subtotal", formatNaira(payload.base_amount)],
+    ["Discount", formatNaira(payload.discount_amount)],
+    ["Total", formatNaira(payload.total_amount)],
+    ["Status", payload.status],
+  ];
+
+  const rowsHtml = rows
+    .map(
+      ([label, value]) =>
+        `<div class="receipt__row"><span>${label}</span><b>${value}</b></div>`
+    )
+    .join("");
+
+  receiptEl.innerHTML = `
+    <div class="receipt__title">Dolphins Courts</div>
+    <div class="receipt__muted">Receipt ID: ${receiptId}</div>
+    <div class="receipt__muted">Issued: ${issuedAt}</div>
+    ${rowsHtml}
+  `;
+
+  const receiptHtml = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Receipt ${receiptId}</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; color: #0f172a; }
+      h1 { margin: 0 0 6px; font-size: 22px; }
+      .muted { color: #4b5563; font-size: 12px; margin-bottom: 12px; }
+      .row { display: flex; justify-content: space-between; margin: 6px 0; }
+      .total { font-weight: 700; margin-top: 10px; }
+      .box { border: 1px dashed #cbd5f5; border-radius: 12px; padding: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>Dolphins Courts</h1>
+    <div class="muted">Receipt ID: ${receiptId}</div>
+    <div class="muted">Issued: ${issuedAt}</div>
+    <div class="box">
+      ${rows
+        .map(
+          ([label, value]) =>
+            `<div class="row"><span>${label}</span><strong>${value}</strong></div>`
+        )
+        .join("")}
+    </div>
+  </body>
+</html>`;
+
+  state.receipt = {
+    html: receiptHtml,
+    filename: `receipt-${receiptId}.html`,
+  };
+}
+
+function downloadReceipt() {
+  if (!state.receipt.html) return;
+  const blob = new Blob([state.receipt.html], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = state.receipt.filename || "receipt.html";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 function renderBookingSummary() {
   const el = $("bookingSummary");
   if (!el) return;
@@ -462,136 +722,7 @@ async function refreshAvailability() {
     });
   }
 
-  paintCalendar();
   updateAvailabilityStatus();
-}
-
-function renderCalendar(baseDate) {
-  const el = $("calendar");
-  if (!el) return;
-
-  const d = new Date(baseDate);
-  const monthLabel = d.toLocaleString("en", { month: "long", year: "numeric" });
-
-  el.innerHTML = `
-    <div class="cal__head">
-      <button type="button" class="cal__btn" id="calPrev">&lt;</button>
-      <b id="calTitle">${monthLabel}</b>
-      <button type="button" class="cal__btn" id="calNext">&gt;</button>
-    </div>
-    <div class="cal__grid" id="calDow"></div>
-    <div class="cal__grid" id="calGrid"></div>
-  `;
-
-  $("calPrev").addEventListener("click", async () => {
-    const nd = addMonths(new Date(state.startDate), -1);
-    state.startDate = nd.toISOString().slice(0, 10);
-    if (state.plan === "Hourly") state.endDate = state.startDate;
-    syncInputsFromState();
-    renderCalendar(nd);
-    await refreshAvailability();
-  });
-
-  $("calNext").addEventListener("click", async () => {
-    const nd = addMonths(new Date(state.startDate), +1);
-    state.startDate = nd.toISOString().slice(0, 10);
-    if (state.plan === "Hourly") state.endDate = state.startDate;
-    syncInputsFromState();
-    renderCalendar(nd);
-    await refreshAvailability();
-  });
-
-  const dow = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const dowCells = dow.map((d) => `<div class="cal__dow">${d}</div>`).join("");
-  if ($("calDow")) $("calDow").innerHTML = dowCells;
-
-  paintCalendar();
-}
-
-function paintCalendar() {
-  const grid = $("calGrid");
-  const title = $("calTitle");
-  if (!grid) return;
-
-  const d = new Date(state.startDate);
-  const monthStart = firstDayOfMonth(d);
-  const monthEnd = lastDayOfMonth(d);
-
-  if (title) {
-    title.textContent = d.toLocaleString("en", {
-      month: "long",
-      year: "numeric",
-    });
-  }
-
-  const startWeekday = monthStart.getDay();
-  const daysInMonth = monthEnd.getDate();
-
-  const cells = [];
-  for (let i = 0; i < startWeekday; i++) {
-    cells.push(`<div class="cal__day is-muted"></div>`);
-  }
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const iso = new Date(d.getFullYear(), d.getMonth(), day)
-      .toISOString()
-      .slice(0, 10);
-
-    const isBooked = state.bookedDates.has(iso);
-    const isBlocked = state.blockedDates.has(iso);
-    const isSelected = isWithinSelected(iso);
-
-    const cls = [
-      "cal__day",
-      isSelected ? "is-selected" : "",
-      isBooked || isBlocked ? "is-busy" : "",
-      isBooked || isBlocked ? "is-muted" : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-
-    const disabled = isBooked || isBlocked ? "disabled" : "";
-
-    cells.push(`
-      <button class="${cls}" type="button" data-iso="${iso}" ${disabled}>
-        ${day}
-      </button>
-    `);
-  }
-
-  grid.innerHTML = cells.join("");
-
-  qsa("[data-iso]", grid).forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const iso = btn.getAttribute("data-iso");
-
-      if (state.plan === "Hourly") {
-        state.startDate = iso;
-        state.endDate = iso;
-      } else {
-        if (!state.startDate || state.startDate === state.endDate) {
-          state.startDate = iso;
-          state.endDate = iso;
-        } else if (iso < state.startDate) {
-          state.endDate = state.startDate;
-          state.startDate = iso;
-        } else {
-          state.endDate = iso;
-        }
-      }
-
-      syncInputsFromState();
-      await refreshAvailability();
-      recalcPrice();
-      $("calendar")?.classList.remove("is-open");
-    });
-  });
-}
-
-function isWithinSelected(iso) {
-  const a = state.startDate;
-  const b = state.endDate || state.startDate;
-  return iso >= a && iso <= b;
 }
 
 function isRangeUnavailable(startISO, endISO) {
@@ -662,7 +793,11 @@ function recalcPrice() {
   let base = 0;
 
   if (state.plan === "Hourly") {
-    const hours = clamp(Number($("durationInput")?.value || state.hours), 1, 12);
+    const hours = clamp(
+      Number($("durationInput")?.value || state.hours),
+      1,
+      12
+    );
     state.hours = hours;
     base = (court.hourly_rate || 0) * hours;
   }
@@ -847,6 +982,8 @@ async function submitBooking() {
       "Demo mode: booking captured locally. Connect Supabase to save it.",
       true
     );
+    renderReceipt(payload, "demo");
+    openReceiptModal();
     return;
   }
 
@@ -867,6 +1004,9 @@ async function submitBooking() {
     `Booking created. Ref: ${data.id}. We will contact you to confirm.`,
     true
   );
+
+  renderReceipt(payload, data.id);
+  openReceiptModal();
 
   await refreshAvailability();
 }

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -49,16 +49,19 @@
     <header class="nav">
       <div class="nav__inner container">
         <a class="brand" href="#top" aria-label="Dolphins Courts">
-          <span class="brand__mark">DC</span>
+          <img
+            class="brand__mark"
+            src="assets/img/adrenale.png"
+            alt="Adrenale"
+          />
           <span class="brand__text">
-            <b>Dolphins</b>
-            <small>COURT RENTALS</small>
+            <b>Adrenale-Dolphins</b>
+            <small>RENTALS</small>
           </span>
         </a>
 
         <nav class="nav__links" aria-label="Primary">
           <a href="#courts">Courts</a>
-          <a href="#trending">Trending</a>
           <a href="#usage">Usage</a>
           <a href="#faq">FAQ</a>
           <a href="#contact">Contact</a>
@@ -66,6 +69,16 @@
         </nav>
 
         <div class="nav__actions">
+          <button
+            class="iconbtn nav__toggle"
+            id="navToggle"
+            type="button"
+            aria-label="Toggle menu"
+            aria-expanded="false"
+            aria-controls="mobileMenu"
+          >
+            &#9776;
+          </button>
           <div class="search">
             <span class="search__icon" aria-hidden="true">⌕</span>
             <input
@@ -80,6 +93,13 @@
         </div>
       </div>
     </header>
+    <nav class="mobile-menu" id="mobileMenu" aria-hidden="true">
+      <a href="#courts">Courts</a>
+      <a href="#usage">Usage</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+      <a href="./admin.html">Admin</a>
+    </nav>
 
     <!-- Hero -->
     <main id="top">
@@ -87,7 +107,7 @@
         <div class="hero__bg" aria-hidden="true"></div>
         <div class="container hero__inner">
           <div class="hero__copy">
-            <h1>Premium court rental</h1>
+            <h1>Adrenale-Dolphins Rental</h1>
             <p>
               Book premium basketball courts by the hour, day, or week.
               Transparent pricing, calendar availability, and instant
@@ -95,7 +115,6 @@
             </p>
           </div>
 
-          <!-- Booking Bar (tabs like the template) -->
           <div class="booking">
             <div class="booking__tabs" role="tablist" aria-label="Booking type">
               <button
@@ -116,33 +135,9 @@
 
             <div class="booking__row">
               <div class="field">
-                <label for="courtSelect">Court view</label>
-                <select id="courtSelect"></select>
-                <div id="rateHint" class="hint"></div>
-              </div>
-
-              <div class="field">
                 <label for="dateInput">Start date</label>
                 <div class="calendar-wrap">
-                  <input
-                    id="dateInput"
-                    type="text"
-                    placeholder="Select date"
-                    readonly
-                  />
-                  <button
-                    class="calendar-btn"
-                    id="openCalendar"
-                    type="button"
-                    aria-label="Open calendar"
-                  >
-                    📅
-                  </button>
-                  <div
-                    class="calendar"
-                    id="calendar"
-                    aria-label="Calendar"
-                  ></div>
+                  <input id="dateInput" type="date" />
                 </div>
               </div>
 
@@ -162,11 +157,9 @@
                 </select>
               </div>
 
-              <!-- ✅ STEP 4 INSERTED: End date (used for Daily/Weekly), hidden by default -->
               <div class="field" id="endDateField" style="display: none">
                 <label for="endDateInput">End date</label>
                 <input id="endDateInput" type="date" />
-                <div class="hint">For daily/weekly bookings only.</div>
               </div>
 
               <div class="field field--promo">
@@ -244,63 +237,10 @@
         </div>
       </section>
 
-      <!-- Trending -->
-      <section class="section section--soft" id="trending">
-        <div class="container">
-          <div class="section__head section__head--row">
-            <div>
-              <h2>Trending courts</h2>
-              <p>Popular choices this week.</p>
-            </div>
-            <a class="btn btn--light" href="#courts">View all →</a>
-          </div>
-
-          <div class="cards cards--trending" id="trendingCards"></div>
-        </div>
-      </section>
-
       <!-- Usage Strip -->
       <section class="strip" id="usage">
-        <div class="container strip__inner">
-          <div class="strip__item">
-            <div class="strip__icon">🏆</div>
-            <div>
-              <b>Tournaments</b>
-              <p>League games, finals, and showcases.</p>
-            </div>
-          </div>
-
-          <div class="strip__item">
-            <div class="strip__icon">🏫</div>
-            <div>
-              <b>School events</b>
-              <p>Sports days, inter-house, assemblies.</p>
-            </div>
-          </div>
-
-          <div class="strip__item">
-            <div class="strip__icon">💍</div>
-            <div>
-              <b>Weddings</b>
-              <p>Reception layouts, vendor staging.</p>
-            </div>
-          </div>
-
-          <div class="strip__item">
-            <div class="strip__icon">🕊️</div>
-            <div>
-              <b>Funerals</b>
-              <p>Overflow seating, organized gathering.</p>
-            </div>
-          </div>
-
-          <div class="strip__item">
-            <div class="strip__icon">🏢</div>
-            <div>
-              <b>Corporate events</b>
-              <p>Team bonding, product showcases.</p>
-            </div>
-          </div>
+        <div class="container">
+          <div class="strip__inner" id="usageStrip"></div>
         </div>
       </section>
 
@@ -370,20 +310,19 @@
           <div class="cards cards--contact">
             <div class="card card--mini">
               <b>WhatsApp</b>
-              <span class="pilltag">+234 XXX XXX XXXX</span>
-              <p class="muted">Replace with your real number.</p>
+              <span class="pilltag">+234 906 783 1477</span>
             </div>
 
             <div class="card card--mini">
               <b>Email</b>
-              <span class="pilltag">support@dolphins.example</span>
-              <p class="muted">Replace with your real email.</p>
+              <span class="pilltag">ballarkafrica@gmail.com</span>
             </div>
 
             <div class="card card--mini">
               <b>Location</b>
-              <span class="pilltag">Lagos</span>
-              <p class="muted">Add address and opening hours.</p>
+              <span class="pilltag"
+                >Dolphins Indoor Court 1, Olu Aboderin St, Lagos, Nigeria</span
+              >
             </div>
           </div>
         </div>
@@ -394,7 +333,11 @@
         <div class="container footer__inner">
           <div class="footer__brand">
             <div class="brand brand--footer">
-              <span class="brand__mark">DC</span>
+              <img
+                class="brand__mark"
+                src="assets/img/adrenale.png"
+                alt="Adrenale"
+              />
               <span class="brand__text">
                 <b>Dolphins</b>
                 <small>BASKETBALL RENTALS</small>
@@ -411,7 +354,6 @@
             <div>
               <b>Explore</b>
               <a href="#courts">Courts</a>
-              <a href="#trending">Trending</a>
               <a href="#usage">Usage</a>
             </div>
             <div>
@@ -503,6 +445,43 @@
           </button>
           <button class="btn btn--dark" id="confirmBooking" type="button">
             Confirm reservation
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Receipt Modal -->
+    <div class="modal" id="receiptModal" aria-hidden="true">
+      <div class="modal__backdrop" id="receiptBackdrop"></div>
+
+      <div
+        class="modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="receiptTitle"
+      >
+        <div class="modal__head">
+          <h3 id="receiptTitle">Receipt</h3>
+          <button
+            class="iconbtn"
+            id="closeReceipt"
+            type="button"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="modal__body">
+          <div class="receipt" id="receiptContent"></div>
+        </div>
+
+        <div class="modal__foot">
+          <button class="btn btn--light" id="cancelReceipt" type="button">
+            Close
+          </button>
+          <button class="btn btn--dark" id="downloadReceipt" type="button">
+            Download receipt
           </button>
         </div>
       </div>
