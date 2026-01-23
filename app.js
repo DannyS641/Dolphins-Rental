@@ -58,7 +58,7 @@ const DEMO_COURTS = [
   },
   {
     id: "demo-4",
-    name: "Airport View",
+    name: "Airport",
     slug: "airport-view",
     hero_image: "",
     card_image: "",
